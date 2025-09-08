@@ -1,0 +1,8 @@
+.rejilla { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 12px; }
+.tarjeta { border: 1px solid #ddd; border-radius: 8px; padding: 12px; background: #fff; }
+.linea { display: flex; gap: 8px; align-items: center; }
+.etiqueta { padding: 2px 6px; border-radius: 999px; font-size: 12px; border: 1px solid #999; }
+.etq-premium { background: #fff6e0; border-color: #e0a100; }
+.etq-adulto { background: #ffe5e5; border-color: #d33; color: #a00; font-weight: 600; }
+.btn { display: inline-block; margin-top: 8px; padding: 6px 10px; border: 1px solid #666; background: #f7f7f7; text-decoration: none; }
+.desc { min-height: 48px; color: #555; }

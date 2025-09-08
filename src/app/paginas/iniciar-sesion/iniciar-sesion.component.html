@@ -1,0 +1,14 @@
+<h2>Iniciar sesión</h2>
+
+<form [formGroup]="formulario" (ngSubmit)="entrar()">
+  <label>Correo <input type="email" formControlName="correo" /></label>
+  <div *ngIf="formulario.controls.correo.touched && formulario.controls.correo.invalid">Correo invalido.</div>
+
+  <label>Contraseña <input type="password" formControlName="contrasena" /></label>
+  <div *ngIf="formulario.controls.contrasena.touched && formulario.controls.contrasena.invalid">Requerida.</div>
+
+  <button type="submit" [disabled]="cargando || formulario.invalid">Entrar</button>
+  <p *ngIf="cargando">Verificando…</p>
+  <p *ngIf="error">{{ error }}</p>
+
+<p><strong>Usuarios de prueba</strong>: gratis&#64;cine.com, premium&#64;cine.com, adulto&#64;cine.com (contraseña: 123).</p></form>

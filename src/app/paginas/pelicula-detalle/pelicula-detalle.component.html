@@ -1,0 +1,13 @@
+<ng-container *ngIf="pelicula$ | async as p">
+  <h2>{{ p.titulo }}</h2>
+  <p>
+    Clasificación:
+    <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
+      {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
+    </span>
+    <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
+  </p>
+  <p>{{ p.descripcion }}</p>
+</ng-container>
+
+<button type="button" class="btn" (click)="volver()">← Volver</button>

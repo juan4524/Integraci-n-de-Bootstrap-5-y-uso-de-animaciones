@@ -1,0 +1,16 @@
+<h2>Catálogo premium</h2>
+<ul class="rejilla">
+  <li *ngFor="let p of (peliculas$ | async)" class="tarjeta">
+    <h3>{{ p.titulo }}</h3>
+    <p class="linea">
+      <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
+        {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
+      </span>
+      <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
+    </p>
+    <p class="desc">{{ p.descripcion }}</p>
+    <a [routerLink]="['/pelicula', p.id]" class="btn">Ver detalle</a>
+  </li>
+</ul>
+
+<p><a routerLink="/inicio"> Volver a inicio</a></p>

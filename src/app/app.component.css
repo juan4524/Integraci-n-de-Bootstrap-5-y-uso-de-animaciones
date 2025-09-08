@@ -1,0 +1,6 @@
+.barra { padding: 12px; border-bottom: 1px solid #ddd; }
+nav { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.separador { flex: 1 1 auto; }
+.btn { padding: 6px 10px; border: 1px solid #666; background: #f7f7f7; cursor: pointer; }
+.estado { color: #555; }
+.contenido { padding: 16px; }

@@ -1,0 +1,25 @@
+<h2>Catalogo gratis</h2>
+
+<ng-container *ngIf="peliculas$ | async as peliculas; else cargando">
+  <p *ngIf="peliculas.length === 0">No hay peliculas gratis disponibles.</p>
+
+  <ul class="rejilla" *ngIf="peliculas.length > 0">
+    <li *ngFor="let p of peliculas" class="tarjeta">
+      <h3>{{ p.titulo }}</h3>
+      <p class="linea">
+        <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
+          {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
+        </span>
+        <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
+      </p>
+      <p class="desc">{{ p.descripcion }}</p>
+      <a [routerLink]="['/pelicula', p.id]" class="btn">Ver detalle</a>
+    </li>
+  </ul>
+</ng-container>
+
+<ng-template #cargando>
+  <p>Cargando el catalogo…</p>
+</ng-template>
+
+<p><a routerLink="/inicio"> Volver a inicio</a></p>
