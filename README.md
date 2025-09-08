@@ -1,7 +1,7 @@
 # CineParaTodos
 
 Autenticación
-La práctica implementa se simula un registro pre definido, donde tenemos tres usuarios de prueba (gratis, premium y adulto) también se simula en backend con angular-in-memory-web-api.
+En la practica se implementa la simulacion de un registro pre definido, donde tenemos tres usuarios de prueba (gratis, premium y adulto) también se simula en backend con angular-in-memory-web-api.
 Cuando se inicia sesión el servicio autenticación guarda en el almacenamiento local un token y dos banderas, una para el usuario premium y otra si el usuario es adulto, mayor de 18 años.
 Las banderas representan privilegios del usuario en la aplicación, utilizamos un interceptor de autorización para añadir automáticamente el encabezado Authorization: Bearer <token> a cada solicitud hecha a nuestra API (base api/), esto hace que un visitante solo pueda acceder a la sección gratuita del sitio, un usuario premium entra a la sección premium, y un usuario premium identificado como adulto puede ver el catálogo de películas clasificadas C (18+).
 
