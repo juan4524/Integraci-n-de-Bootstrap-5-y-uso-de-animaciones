@@ -109,6 +109,11 @@ Primero, en el componente del módulo se agregó la importación para usar anima
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 Y se agregó en el decorador del componente la propiedad animaciones que contiene los triggers definidos con @angular/animations:
 
+
+
+
+
+
 @Component({
   selector: 'app-catalogo-gratis',
   standalone: true,
