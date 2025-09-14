@@ -1,13 +1,44 @@
+<!-- Vista de detalle:
+     - Datos vienen de pelicula$ (Observable) con async y alias "p"
+     - Layout responsive con Bootstrap: poster mas el texto en dos columnas
+-->
 <ng-container *ngIf="pelicula$ | async as p">
-  <h2>{{ p.titulo }}</h2>
-  <p>
-    Clasificación:
-    <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
-      {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
-    </span>
-    <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
-  </p>
-  <p>{{ p.descripcion }}</p>
-</ng-container>
 
-<button type="button" class="btn" (click)="volver()">← Volver</button>
+  <!-- fila con separacion y alineacion superior -->
+  <div class="row g-3 align-items-start">
+
+    <!-- Columna del poster, ocupa toda la fila en móvil, 4/12 desde sm -->
+    <div class="col-12 col-sm-4">
+      <img
+        [src]="p.imagenUrl"
+        class="img-fluid rounded mb-2"  
+        alt="{{ p.titulo }}"
+        loading="lazy">                
+    </div>
+
+    <!-- Columna del contenido: 8/12 desde sm -->
+    <div class="col-12 col-sm-8">
+      <h2 class="h4 mb-2">{{ p.titulo }}</h2>
+
+      <!-- La clasificacion usa la etiqueta y marca 18+ cuando es 'C' -->
+      <p class="mb-2">
+        Clasificación:
+        <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
+          {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
+        </span>
+        <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
+      </p>
+
+      <p class="mb-0">{{ p.descripcion }}</p>
+    </div>
+  </div>
+
+  <!-- Accion de retorno con stilos de boostrap-->
+  <button
+    type="button"
+    class="btn btn-outline-secondary btn-sm mt-3"
+    (click)="volver()"
+  >
+    ← Volver
+  </button>
+</ng-container>

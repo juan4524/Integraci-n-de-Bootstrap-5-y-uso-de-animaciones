@@ -1,237 +1,357 @@
 # CineParaTodos
 
-Autenticación
-En la practica se implementa la simulacion de un registro pre definido, donde tenemos tres usuarios de prueba (gratis, premium y adulto) también se simula en backend con angular-in-memory-web-api.
-Cuando se inicia sesión el servicio autenticación guarda en el almacenamiento local un token y dos banderas, una para el usuario premium y otra si el usuario es adulto, mayor de 18 años.
-Las banderas representan privilegios del usuario en la aplicación, utilizamos un interceptor de autorización para añadir automáticamente el encabezado Authorization: Bearer <token> a cada solicitud hecha a nuestra API (base api/), esto hace que un visitante solo pueda acceder a la sección gratuita del sitio, un usuario premium entra a la sección premium, y un usuario premium identificado como adulto puede ver el catálogo de películas clasificadas C (18+).
+Integración de Bootstrap 5 y uso de animaciones
+Enlace al repositorio:
+https://github.com/juan4524/Integraci-n-de-Bootstrap-5-y-uso-de-animaciones
+En este proyecto integré Bootstrap 5 para el diseño responsivo.
+Lo instalé con npm y lo registré en angular.json para que sus estilos y scripts estén disponibles en toda la app.
+Ejecuté el comando en la terminal desde la carpeta del proyecto (donde están angular.json y package.json):
+npm install bootstrap
+Después lo registré en angular.json para que aplique en toda la app:
+ "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "src/styles.css"
+            ],
+            "scripts": [
+              
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            ]
+          },
 
-```ts
-// src/app/nucleo/servicio-autenticacion.service.ts
-@Injectable({ providedIn: 'root' })
-export class ServicioAutenticacion {
-  private http = inject(HttpClient);
+Con esta configuración puedo utilizar las clases y componentes dentro de la API de Angular aplicándolos directamente en el HTML y el CSS, para mejorar la UX sin escribir código extenso: interfaz responsiva con botones, formularios, etc.
+Configuración de animaciones
+Instalación (terminal)
+Instalé el paquete de animaciones para poder usarlo desde main.ts y habilitarlo como provider en toda la aplicación.
+Comando para la terminal:
+npm i @angular/animations@19.2.14
+Nota: la versión mayor debe coincidir con la versión de Angular
+Habilitación global en main.ts 
+Habilito las animaciones en toda la app importando provideAnimations y registrándolo en los providers. Con esto puedo declarar triggers de Angular solo en los componentes que los necesiten (por ejemplo, entrada de tarjetas en los catálogos o una transición entre páginas en el componente raíz).
 
-  iniciarSesion(correo: string, contrasena: string) {
-    return this.http.post<RespuestaInicioSesion>(`${API_BASE}auth/iniciar-sesion`, { correo, contrasena })
-      .pipe(
-        tap(r => {  // ServicioAutenticacion: guardar sesion
-          localStorage.setItem(CLAVE_TOKEN, r.token);
-          localStorage.setItem(CLAVE_PREMIUM, String(r.esPremium));
-          localStorage.setItem(CLAVE_ADULTO, String(r.esAdulto));
-        }),
-        catchError(err => throwError(() => err))
-      );
-  }
-  cerrarSesion() { localStorage.removeItem(CLAVE_TOKEN); localStorage.removeItem(CLAVE_PREMIUM); localStorage.removeItem(CLAVE_ADULTO); }
-  estaAutenticado() { return !!localStorage.getItem(CLAVE_TOKEN); }
-  esPremium()       { return localStorage.getItem(CLAVE_PREMIUM) === 'true'; }
-  esAdulto()        { return localStorage.getItem(CLAVE_ADULTO)  === 'true'; }
-  obtenerToken()    { return localStorage.getItem(CLAVE_TOKEN); }
-}
-```
+// main.ts
+import { bootstrapApplication } from '@angular/platform-browser';
+import { importProvidersFrom } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { InMemoryWebApiModule } from 'angular-in-memory-web-api';
+import { AppComponent } from './app/app.component';
+import { RUTAS } from './app/app.routes';
+import { interceptorAutorizacion } from './app/nucleo/interceptor-autorizacion.interceptor';
+import { interceptorErrores } from './app/nucleo/interceptor-errores.interceptor';
+import { ApiFalsa } from './app/nucleo/api-falsa';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
-```ts
-// src/app/nucleo/interceptor-autorizacion.interceptor.ts
-export const interceptorAutorizacion: HttpInterceptorFn = (req, next) => {
-  const auth = inject(ServicioAutenticacion);
-  const token = auth.obtenerToken();
-  const esApiPropia = req.url.startsWith(API_BASE);
-
-  const reqConToken = (token && esApiPropia)
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
-
-  return next(reqConToken);
-};
-```
-
-Manejo de errores
-El manejo global está centralizado en el interceptor de errores, cuando el servidor simulado responde con 401 (no autorizado), el interceptor redirige a /iniciar-sesion, los demás errores dejan pasar al que hiso la llamada.
-En los listados de las películas el servicio hoy re emite el error, mientras en el detalle de películas el guard captura los fallos y manda a /no-encontrado.
-En el login el componente manda el mensaje de error del back end.
-
-```ts
-// src/app/nucleo/interceptor-errores.interceptor.ts
-export const interceptorErrores: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
-  return next(req).pipe(
-    catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
-        router.navigateByUrl('/iniciar-sesion');
-      }
-      return throwError(() => error);
-    })
-  );
-};
-```
-
-```ts
-// src/app/nucleo/servicio-peliculas.service.ts
-@Injectable({ providedIn: 'root' })
-export class ServicioPeliculas {
-  private http = inject(HttpClient);
-
-  listarTodas() {
-    return this.http.get<Pelicula[]>(`${API_BASE}peliculas`)
-      .pipe(catchError(err => throwError(() => err)));
-  }
-  listarGratis()  { return this.listarTodas().pipe(map(xs => xs.filter(p => !p.esPremium))); }
-  listarPremium() { return this.listarTodas().pipe(map(xs => xs.filter(p =>  p.esPremium))); }
-
-  buscarPorId(id: string) {
-    return this.http.get<Pelicula>(`${API_BASE}peliculas/${id}`)
-      .pipe(catchError(err => throwError(() => err)));
-  }
-}
-```
-
-Configuración de rutas
-En la aplicación SPA declaramos las rutas en app.routes.ts. estan las vistas de /inicio y /catalogo/gratis, y las vistas que requieren permisos, /catalogo/premium y /película/:id. y también las rutas auxiliares /iniciar-sesion, /acceso-no-autorizado y una ruta comodina ** para no encontrado, si el usuario intenta ir a un componente o id que no existe será redirigido a esta página.
-
-```ts
-// src/app/app.routes.ts
-export const RUTAS: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'inicio' },
-  { path: 'inicio', component: InicioComponent, title: 'Inicio' },
-
-  { path: 'catalogo/gratis', component: CatalogoGratisComponent, title: 'Catalogo Gratis' },
-
-  // Solo usuarios autenticados y con premium
-  { path: 'catalogo/premium',
-    component: CatalogoPremiumComponent,
-    title: 'Catalogo Premium',
-    canActivate: [guardiaAutenticacion, guardiaPremium]
-  },
-
-  // Cualquiera puede entrar al detalle, pero si la película es "C" (18+),
-  // el guardianAdulto validara el adulto+autenticacion en tiempo real.
-  { path: 'pelicula/:id',
-    component: PeliculaDetalleComponent,
-    title: 'Detalle de Película',
-    canActivate: [guardiaAdulto]
-  },
-
-  { path: 'iniciar-sesion', component: IniciarSesionComponent, title: 'Iniciar sesión' },
-  { path: 'acceso-no-autorizado', component: AccesoNoAutorizadoComponent, title: 'Acceso no autorizado' },
-  { path: '**', component: NoEncontradoComponent, title: 'No encontrado' },
-];
-```
-
-Rutas protegidas, autenticación y autorización
-Protegimos las rutas sensibles con canActivate.
-En /catalogo/premium se exige sesión iniciada y rol premium.
-En /pelicula/:id
-Ates de mostrar los detalles la app consulta si su clasificación es de C +18, esta clasificación requiere que el usuario sea adulto, si el usuario no cumple con la regla es redirigido automáticamente a /acceso-no-autorizado (o a /iniciar-sesion, según el caso).
-Las rutas están separadas entre rutas públicas, privadas y para adultos para reflejar los niveles de autorización.
-
-```ts
-// src/app/app.routes.ts (fragmentos protegidos)
-{ path: 'catalogo/premium',
-  component: CatalogoPremiumComponent,
-  title: 'Catalogo Premium',
-  canActivate: [guardiaAutenticacion, guardiaPremium]
-},
-
-{ path: 'pelicula/:id',
-  component: PeliculaDetalleComponent,
-  title: 'Detalle de Película',
-  canActivate: [guardiaAdulto]
-},
-```
-
-Guards
-Se implementaron tres guards, para verificar la sesión, el guard de premium comprueba la bandera premium, y el de adulto carga la película y, si es C, exige que el usuario sea adulto, de lo contrario redirige.
-
-```ts
-// src/app/nucleo/guardia-autenticacion.guard.ts
-// Guardia de Autenticación: comprueba si hay sesión; si no, envía a /iniciar-sesion.
-if (auth.estaAutenticado()) return true;
-router.navigate(['/iniciar-sesion']);
-return false;
-```
-
-```ts
-// src/app/nucleo/guardia-premium.guard.ts
-// Guardia de Premium, Autentica y verifica la bandera premium para entrar a la sección exclusiva.
-if (auth.estaAutenticado() && auth.esPremium()) return true;
-router.navigate(['/acceso-no-autorizado']);
-return false;
-```
-
-```ts
-// src/app/nucleo/guardia-adulto.guard.ts
-// Guardia de Adulto (18+): al entrar al detalle, carga la película y, si es C, exige que el usuario sea adulto;si no, redirige a /acceso-no-autorizado.
-return peliculas.buscarPorId(id).pipe(
-  map(p => {
-    if (p.clasificacion !== 'C') return true; // libre acceso
-    if (auth.estaAutenticado() && auth.esAdulto()) return true;
-    router.navigate(['/acceso-no-autorizado']);
-    return false;
-  }),
-  catchError(() => {
-    router.navigate(['/no-encontrado']);
-    return of(false);
-  })
-);
-```
-
-Estos guards aíslan la lógica de seguridad del resto de la UI y garantizan que solo los usuarios con permisos correctos atraviesen cada enlace.
-
-Datos y API simulada
-Se uso un api simulado en memoria para demostrar el flujo completo del back end, implementado una semilla de 4 películas, dos gratis y dos premium, en donde una de ellas es de clasificación C (18+) que sirve para probar la restricción de edad y se definieron los usuarios de prueba (gratis, premium y adulto).
-
-```ts
-// src/app/nucleo/api-falsa.ts
-@Injectable({ providedIn: 'root' })
-export class ApiFalsa implements InMemoryDbService {
-  createDb() {
-    const peliculas = [
-      { id: '1', titulo: 'Apta para todos',  clasificacion: 'A', esPremium: false, descripcion: 'Familiar.' },
-      { id: '2', titulo: 'Drama popular',    clasificacion: 'B', esPremium: true,  descripcion: 'Solo premium.' },
-      { id: '3', titulo: 'Suspenso adulto',  clasificacion: 'C', esPremium: true,  descripcion: 'Clasificación C (18+).' },
-      { id: '4', titulo: 'Comedia ligera',   clasificacion: 'A', esPremium: false, descripcion: 'Gratis para todos.' },
-    ];
-    return { peliculas }; //  GET /api/peliculas
-  } // /api/peliculas
-
-  // login simulado
-  post(reqInfo: RequestInfo) {
-    // POST /api/auth/iniciar-sesion
-    if (reqInfo.url.endsWith('/auth/iniciar-sesion')) {
-      const body = reqInfo.utils.getJsonBody(reqInfo.req) as any;
-      const usuarios = [
-        { correo: 'gratis@cine.com',  contrasena: '123', esPremium: false, esAdulto: false },
-        { correo: 'premium@cine.com', contrasena: '123', esPremium: true,  esAdulto: false },
-        { correo: 'adulto@cine.com',  contrasena: '123', esPremium: true,  esAdulto: true  },
-      ];
-      const u = usuarios.find(x => x.correo === body?.correo && x.contrasena === body?.contrasena);
-      const options: ResponseOptions = u
-        ? { status: 200, body: { token: 'FAKE-' + Date.now(), esPremium: u.esPremium, esAdulto: u.esAdulto } }
-        : { status: 401, body: { mensaje: 'Credenciales inválidas' } };
-      return reqInfo.utils.createResponse$(() => options);
-    }
-    return undefined;
-  }
-}
-```
-
-Arranque y registro de Router/HTTP
-
-```ts
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(RUTAS),
     provideHttpClient(withInterceptors([interceptorAutorizacion, interceptorErrores])),
     importProvidersFrom(InMemoryWebApiModule.forRoot(ApiFalsa, { delay: 400, apiBase: 'api/' })),
+    provideAnimations(), // habilitar animaciones para toda la app
   ],
 }).catch(console.error);
-```
 
-Referencias
-Dev, L. A. (14 de marzo de 2023). youtube. Obtenido de https://www.youtube.com/watch?v=WyydiGTOTxQ&t=1s
-Angular. (2025). Route guards. Angular Documentation. Recuperado el 4 de septiembre de 2025, de https://angular.dev/guide/routing/route-guards
-Angular. (2025). HTTP interceptors. Angular Documentation. Recuperado el 4 de septiembre de 2025, de https://angular.dev/guide/http/interceptors
-Luna, M. (2024). Authentication and authorization in Angular. Medium. Recuperado el 4 de septiembre de 2025, de https://medium.com/@matheusluna96/authentication-and-authorization-in-angular-0697ab16e465
+Después declaramos los triggers en los componentes donde quiero aplicar los efectos (p. ej., Catálogo Gratis, Catálogo Premium, Detalle de Película y, opcionalmente, transición de rutas en el componente raíz).
+
+Modificaciones al proyecto usando Bootstrap
+Me moví al archivo app.component.html para aplicar clases y utilidades de Bootstrap directamente en la plantilla HTML para añadir responsividad sin tocar la lógica (enlaces, condiciones *ngIf y ng-template para autenticación y permisos).
+Cambios mínimos realizados:
+•	container para ancho y márgenes.
+•	Utilidades de flex: d-flex, gap-2/3, justify-content-between, align-items-center para ordenar el header.
+•	Badges para estados (Sesión / Premium / 18+).
+•	Clases de botón (btn btn-*) para mantener los estilos consistentes en el botón de cerrar sesión y el de iniciar sesión.
+•	Envolví el contenido principal en <main class="container py-3"> para un ancho legible y espaciado vertical.
+Código modificado para añadir clases Bootstrap (app.component.html):
+
+
+<header class="bg-body-tertiary border-bottom">
+  <nav class="container d-flex flex-wrap align-items-center justify-content-between py-2">
+
+    <div class="d-flex gap-3">
+      <a routerLink="/inicio" class="nav-link px-0">Inicio</a>
+      <a routerLink="/catalogo/gratis" class="nav-link px-0">Catálogo gratis</a>
+      <a routerLink="/catalogo/premium" class="nav-link px-0">Catálogo premium</a>
+    </div>
+
+    <ng-container *ngIf="autenticado; else bloqueInvitado">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge text-bg-success">Sesión</span>
+        <span class="badge text-bg-warning" *ngIf="premium">Premium</span>
+        <span class="badge text-bg-danger" *ngIf="adulto">18+</span>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </ng-container>
+
+    <ng-template #bloqueInvitado>
+      <a routerLink="/iniciar-sesion" class="btn btn-primary btn-sm">Iniciar sesión</a>
+    </ng-template>
+
+  </nav>
+</header>
+
+<main class="container py-3">
+  <router-outlet></router-outlet>
+</main>
+
+En la barra superior usé una combinación de utilidades de Bootstrap para ordenar el contenido y hacerlo responsivo. 
+Descripción del header
+La clase container fija un ancho máximo por breakpoint y agrega padding horizontal. Con d-flex convierto el <nav> en un contenedor flex y, junto con flex-wrap, esto permite que los elementos se acomoden en varias líneas en pantallas pequeñas, evitando desbordes. align-items-center centra verticalmente, mientras que justify-content-between reparte los bloques con espacio entre ellos (uno a la izquierda y otro a la derecha). py-2 añade un padding vertical moderado.
+Dentro del menú, nav-link da estilo de navegación y px-0 quita el padding horizontal extra. gap-3 mantiene espaciado consistente. 
+Con esta configuración el header queda limpio, tanto en escritorio como en móvil la distribución se adapta sin romper el diseño ni requerir CSS adicional.
+
+
+
+Componente catálogo-gratis
+Grilla responsiva y animaciones para el archivo catalogo-gratis.component.html.
+En este archivo agregamos una grilla, imágenes e implementamos responsividad para los diferentes tamaños de pantalla utilizando los componentes utilitarios de Bootstrap.
+Primero, en el componente del módulo se agregó la importación para usar animaciones: triggers, style, animate, query, stagger.
+import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
+Y se agregó en el decorador del componente la propiedad animaciones que contiene los triggers definidos con @angular/animations:
+
+@Component({
+  selector: 'app-catalogo-gratis',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  templateUrl: './catalogo-gratis.component.html',
+  styleUrls: ['./catalogo-gratis.component.css'],
+  animations: [
+    trigger('animLista', [
+      transition(':enter', [
+        query('li', [
+          style({ opacity: 0, transform: 'translateY(6px)' }),
+          stagger(80, animate('220ms ease-out', style({ opacity: 1, transform: 'none' })))
+        ], { optional: true })
+      ])
+    ]),
+    trigger('animItem', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.98)' }),
+        animate('180ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+      ])
+    ])
+  ]
+})
+
+export class CatalogoGratisComponent {
+  private peliculasSrv = inject(ServicioPeliculas);
+  peliculas$ = this.peliculasSrv.listarGratis();
+}
+Otras modificaciones aparte
+Se agregaron los enlaces para las imágenes en el modelo/datos de la API, apuntando a la carpeta assets/posters.
+Ejemplo:
+imagenUrl: 'assets/posters/sonic.jpg'
+Se declaró la carpeta assets en angular.json para acceso global:
+angular.json:
+"tsConfig": "tsconfig.app.json",
+            "assets": [
+               "src/favicon.ico",
+               "src/assets",
+              { "glob": "**/*", "input": "public" } 
+   ],
+            "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "src/styles.css"
+            ],
+            "scripts": [
+              
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            ]
+
+catalogo-gratis.component.html
+Modificaciones en catalogo-gratis.component.html:
+Nos movimos a catalogo-gratis.component.html y añadimos clases de Bootstrap para obtener una grilla responsiva, sin tocar la lógica que ya estaba definida (*ngIf, *ngFor, routerLink).
+Se envolvió todo en un container para tener anchos legibles y evitar que el contenido pegue a los bordes.
+La lista se transformó en una fila responsiva con row y separación g-3.
+A cada ítem se le añadieron columnas con col-12 col-sm-6 col-md-4 col-lg-3 (de 1 a 2 a 3 a 4 columnas según el ancho de pantalla, de móvil a escritorio).
+Se quitaron viñetas con list-unstyled solo para presentaciones).
+Y agregamos la imagen de cada película usando img-fluid para que sea responsiva.
+solo se tocó la presentación.
+
+<div class="container">
+  <h2 class="h4 mb-3">Catálogo gratis</h2>
+
+  <!-- Si ya llegaron los datos del observable -->
+  <ng-container *ngIf="peliculas$ | async as peliculas; else cargando">
+    <!-- Mensaje cuando no hay resultados -->
+    <p *ngIf="peliculas.length === 0">No hay películas gratis disponibles.</p>
+
+    <!-- LISTA: grid Bootstrap + trigger de lista -->
+    <ul
+      class="rejilla row list-unstyled g-3"
+      *ngIf="peliculas.length > 0"
+      [@animLista]="'on'"
+    >
+      <!-- ITEM: columna responsive + trigger de item -->
+      <li
+  *ngFor="let p of peliculas"
+  class="tarjeta col-12 col-sm-6 col-md-4 col-lg-3"
+  [@animItem]="'on'"
+>
+  <!-- NUEVO: poster -->
+  <img [src]="p.imagenUrl"
+       class="img-fluid rounded mb-2"
+       alt="{{ p.titulo }}"
+       loading="lazy">
+
+  <h3 class="h6 mb-1">{{ p.titulo }}</h3>
+
+         <!-- NUEVO: etiquetas -->
+
+        <p class="linea mb-2">
+          <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
+            {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
+          </span>
+          <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
+        </p>
+
+        <p class="desc mb-2">{{ p.descripcion }}</p>
+
+        <a
+          [routerLink]="['/pelicula', p.id]"
+          class="btn btn-outline-primary btn-sm"
+        >
+          Ver detalle
+        </a>
+      </li>
+    </ul>
+  </ng-container>
+
+  <!-- Placeholder mientras carga -->
+  <ng-template #cargando>
+    <p>Cargando el catálogo…</p>
+  </ng-template>
+
+  <!-- Enlace de retorno -->
+  <p class="mt-3">
+    <a routerLink="/inicio">Volver a inicio</a>
+  </p>
+</div>
+
+Detalle de película (vista responsive con Bootstrap)
+En la pantalla de detalle organizamos la información en dos zonas el póster y los datos (título, clasificación, descripción).
+Como en el HTML anterior solo tocamos la presentación.
+Aplicamos un diseño responsivo en móviles, con el poster arria y la descripción abajo, desde pantallas chicas en adelante, se verán 2 columnas (póster 4/12, texto 8/12). 
+Esto se hiso con la fila row y las columnas col-12 col-sm-4 y col-12 col-sm-8, más un g-3 para separar bloques.
+Aplicamos un poster adaptable, en la imagen usando img-fluid y rounded para que no desborde y mantenga bordes suaves, esto se carga con loading="lazy" para no frenar la vista.
+Aplicamos una jerarquía sencilla, donde el titulo queda como encabezado, la clasificación y la marca Premium siguen usando las etiquetas personalizadas.
+Ser aplico en el botón volver un estilo en bootstrap (btn btn-outline-secondary btn-sm) para darle un margen superior.
+
+
+
+<!-- Vista de detalle:
+     - Datos vienen de pelicula$ (Observable) con async y alias "p"
+     - Layout responsive con Bootstrap: poster mas el texto en dos columnas
+-->
+<ng-container *ngIf="pelicula$ | async as p">
+
+  <!-- fila con separacion y alineacion superior -->
+  <div class="row g-3 align-items-start">
+
+    <!-- Columna del poster, ocupa toda la fila en móvil, 4/12 desde sm -->
+    <div class="col-12 col-sm-4">
+      <img
+        [src]="p.imagenUrl"
+        class="img-fluid rounded mb-2"  
+        alt="{{ p.titulo }}"
+        loading="lazy">                
+    </div>
+
+    <!-- Columna del contenido: 8/12 desde sm -->
+    <div class="col-12 col-sm-8">
+      <h2 class="h4 mb-2">{{ p.titulo }}</h2>
+
+      <!-- La clasificacion usa la etiqueta y marca 18+ cuando es 'C' -->
+      <p class="mb-2">
+        Clasificación:
+        <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
+          {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
+        </span>
+        <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
+      </p>
+
+      <p class="mb-0">{{ p.descripcion }}</p>
+    </div>
+  </div>
+
+  <!-- Accion de retorno con stilos de boostrap-->
+  <button
+    type="button"
+    class="btn btn-outline-secondary btn-sm mt-3"
+    (click)="volver()"
+  >
+    ← Volver
+  </button>
+</ng-container>
+
+
+
+Catálogo premium
+En este módulo se repitió el mismo patrón que en catalogo gratis, solo que, enfocado a la lista premium, aplicamos Bootstrap para crear un listado responsivo (fila row, columnas col-12 col-sm-6 col-md-4 col-lg-3, separación g-3, imágenes con img-fluid y botón con btn btn-outline-primary btn-sm).
+Las animaciones se usan en la lista y las tarjetas para reutilizar los triggers (animLista, animItem) para una entrada suave de los elementos.
+Las películas se muestran con la propiedad imagenUrl (cargada desde assets/posters/...), con loading="lazy" para rendimiento.
+Aplicamos un container para ancho legible y márgenes horizontales.
+row + g-3 para construir la grilla y separar tarjetas.
+col-12 col-sm-6 col-md-4 col-lg-3 para ajustar columnas según el tamaño de pantalla.
+img-fluid rounded mb-2 para que el póster se adapte al ancho de la tarjeta, con bordes redondeados.
+Botón con btn btn-outline-primary btn-sm para un call to action claro y consistente.
+catalogo-premium.component.html
+<div class="container">
+  <h2 class="h4 mb-3">Catálogo premium</h2>
+
+  <ul
+    class="rejilla row list-unstyled g-3"
+    *ngIf="(peliculas$ | async)?.length; else vacio"
+    [@animLista]="'on'"
+  >
+    <li
+      *ngFor="let p of (peliculas$ | async)"
+      class="tarjeta col-12 col-sm-6 col-md-4 col-lg-3"
+      [@animItem]="'on'"
+    >
+      <!-- poster -->
+      <img
+        [src]="p.imagenUrl"
+        class="img-fluid rounded mb-2"
+        alt="{{ p.titulo }}"
+        loading="lazy"
+      >
+
+      <h3 class="h6 mb-1">{{ p.titulo }}</h3>
+
+      <p class="linea mb-2">
+        <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
+          {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
+        </span>
+        <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
+      </p>
+
+      <p class="desc mb-2">{{ p.descripcion }}</p>
+
+      <a [routerLink]="['/pelicula', p.id]" class="btn btn-outline-primary btn-sm">
+        Ver detalle
+      </a>
+    </li>
+  </ul>
+
+  <ng-template #vacio>
+    <p>No hay películas premium disponibles.</p>
+  </ng-template>
+
+  <p class="mt-3">
+    <a routerLink="/inicio">Volver a inicio</a>
+  </p>
+</div>
+Las imágenes se cargan desde assets/posters/... ya ,lo declaramos en angular.json, y las animaciones funcionan porque habilitamos provideAnimations() en main.ts. 
+El modulo queda responsivo, con transiciones suaves y no altera la loica que ya estab definida.
+
+
+
+
+
+
+Referencias:
+Angular. (s. f.). Angular Animations. Angular.io. Recuperado el 15 de septiembre de 2025, de https://v17.angular.io/guide/animations
+Bootstrap Team. (s. f.). Bootstrap. Recuperado el 15 de septiembre de 2025, de https://getbootstrap.com/
+ng-bootstrap Team. (s. f.). Getting Started. ng-bootstrap. Recuperado el 15 de septiembre de 2025, de https://ng-bootstrap.github.io/#/getting-started
 
 
 

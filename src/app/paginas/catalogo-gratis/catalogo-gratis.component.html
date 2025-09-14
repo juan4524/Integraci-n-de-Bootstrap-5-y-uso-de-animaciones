@@ -1,25 +1,59 @@
-<h2>Catalogo gratis</h2>
+<div class="container">
+  <h2 class="h4 mb-3">Catálogo gratis</h2>
 
-<ng-container *ngIf="peliculas$ | async as peliculas; else cargando">
-  <p *ngIf="peliculas.length === 0">No hay peliculas gratis disponibles.</p>
+  <!-- Si ya llegaron los datos del observable -->
+  <ng-container *ngIf="peliculas$ | async as peliculas; else cargando">
+    <!-- Mensaje cuando no hay resultados -->
+    <p *ngIf="peliculas.length === 0">No hay películas gratis disponibles.</p>
 
-  <ul class="rejilla" *ngIf="peliculas.length > 0">
-    <li *ngFor="let p of peliculas" class="tarjeta">
-      <h3>{{ p.titulo }}</h3>
-      <p class="linea">
-        <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
-          {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
-        </span>
-        <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
-      </p>
-      <p class="desc">{{ p.descripcion }}</p>
-      <a [routerLink]="['/pelicula', p.id]" class="btn">Ver detalle</a>
-    </li>
-  </ul>
-</ng-container>
+    <!-- LISTA: grid Bootstrap + trigger de lista -->
+    <ul
+      class="rejilla row list-unstyled g-3"
+      *ngIf="peliculas.length > 0"
+      [@animLista]="'on'"
+    >
+      <!-- ITEM: columna responsive + trigger de item -->
+      <li
+  *ngFor="let p of peliculas"
+  class="tarjeta col-12 col-sm-6 col-md-4 col-lg-3"
+  [@animItem]="'on'"
+>
+  <!-- NUEVO: poster -->
+  <img [src]="p.imagenUrl"
+       class="img-fluid rounded mb-2"
+       alt="{{ p.titulo }}"
+       loading="lazy">
 
-<ng-template #cargando>
-  <p>Cargando el catalogo…</p>
-</ng-template>
+  <h3 class="h6 mb-1">{{ p.titulo }}</h3>
 
-<p><a routerLink="/inicio"> Volver a inicio</a></p>
+         <!-- NUEVO: etiquetas -->
+
+        <p class="linea mb-2">
+          <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
+            {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
+          </span>
+          <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
+        </p>
+
+        <p class="desc mb-2">{{ p.descripcion }}</p>
+
+        <a
+          [routerLink]="['/pelicula', p.id]"
+          class="btn btn-outline-primary btn-sm"
+        >
+          Ver detalle
+        </a>
+      </li>
+    </ul>
+  </ng-container>
+
+  <!-- Placeholder mientras carga -->
+  <ng-template #cargando>
+    <p>Cargando el catálogo…</p>
+  </ng-template>
+
+  <!-- Enlace de retorno -->
+  <p class="mt-3">
+    <a routerLink="/inicio">Volver a inicio</a>
+  </p>
+</div>

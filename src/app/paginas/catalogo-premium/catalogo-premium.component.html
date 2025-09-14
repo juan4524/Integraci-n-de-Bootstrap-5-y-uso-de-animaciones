@@ -1,16 +1,46 @@
-<h2>Catálogo premium</h2>
-<ul class="rejilla">
-  <li *ngFor="let p of (peliculas$ | async)" class="tarjeta">
-    <h3>{{ p.titulo }}</h3>
-    <p class="linea">
-      <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
-        {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
-      </span>
-      <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
-    </p>
-    <p class="desc">{{ p.descripcion }}</p>
-    <a [routerLink]="['/pelicula', p.id]" class="btn">Ver detalle</a>
-  </li>
-</ul>
+<div class="container">
+  <h2 class="h4 mb-3">Catálogo premium</h2>
 
-<p><a routerLink="/inicio"> Volver a inicio</a></p>
+  <ul
+    class="rejilla row list-unstyled g-3"
+    *ngIf="(peliculas$ | async)?.length; else vacio"
+    [@animLista]="'on'"
+  >
+    <li
+      *ngFor="let p of (peliculas$ | async)"
+      class="tarjeta col-12 col-sm-6 col-md-4 col-lg-3"
+      [@animItem]="'on'"
+    >
+      <!-- poster -->
+      <img
+        [src]="p.imagenUrl"
+        class="img-fluid rounded mb-2"
+        alt="{{ p.titulo }}"
+        loading="lazy"
+      >
+
+      <h3 class="h6 mb-1">{{ p.titulo }}</h3>
+
+      <p class="linea mb-2">
+        <span class="etiqueta" [class.etq-adulto]="p.clasificacion === 'C'">
+          {{ p.clasificacion === 'C' ? '18+' : p.clasificacion }}
+        </span>
+        <span *ngIf="p.esPremium" class="etiqueta etq-premium">Premium</span>
+      </p>
+
+      <p class="desc mb-2">{{ p.descripcion }}</p>
+
+      <a [routerLink]="['/pelicula', p.id]" class="btn btn-outline-primary btn-sm">
+        Ver detalle
+      </a>
+    </li>
+  </ul>
+
+  <ng-template #vacio>
+    <p>No hay películas premium disponibles.</p>
+  </ng-template>
+
+  <p class="mt-3">
+    <a routerLink="/inicio">Volver a inicio</a>
+  </p>
+</div>

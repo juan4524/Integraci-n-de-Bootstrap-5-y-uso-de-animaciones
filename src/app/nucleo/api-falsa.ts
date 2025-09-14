@@ -5,10 +5,10 @@ import { InMemoryDbService, RequestInfo, ResponseOptions } from 'angular-in-memo
 export class ApiFalsa implements InMemoryDbService {
   createDb() {
     const peliculas = [
-      { id: '1', titulo: 'Apta para todos',  clasificacion: 'A', esPremium: false, descripcion: 'Familiar.' },
-      { id: '2', titulo: 'Drama popular',    clasificacion: 'B', esPremium: true,  descripcion: 'Solo premium.' },
-      { id: '3', titulo: 'Suspenso adulto',  clasificacion: 'C', esPremium: true,  descripcion: 'Clasificación C (18+).' },
-      { id: '4', titulo: 'Comedia ligera',   clasificacion: 'A', esPremium: false, descripcion: 'Gratis para todos.' },
+      { id: '1', titulo: 'Apta para todos',  clasificacion: 'A', esPremium: false, descripcion: 'Familiar', imagenUrl: 'assets/posters/masha.jpg' },
+      { id: '2', titulo: 'Drama popular',    clasificacion: 'B', esPremium: true,  descripcion: 'Solo premium', imagenUrl: 'assets/posters/soul.jpg' },
+      { id: '3', titulo: 'Suspenso adulto',  clasificacion: 'C', esPremium: true,  descripcion: 'Clasificación C (18+)', imagenUrl: 'assets/posters/red.jpg' },
+      { id: '4', titulo: 'Comedia ligera',   clasificacion: 'A', esPremium: false, descripcion: 'Gratis para todos', imagenUrl: 'assets/posters/sonic.jpg' }
     ];
     return { peliculas }; // -> GET /api/peliculas
   } // -> /api/peliculas

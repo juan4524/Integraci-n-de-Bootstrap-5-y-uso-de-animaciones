@@ -9,6 +9,7 @@ export interface Pelicula {
   clasificacion: 'A' | 'B' | 'C';
   esPremium: boolean;
   descripcion: string;
+  imagenUrl: string; 
 }
 
 const API_BASE = 'api/';

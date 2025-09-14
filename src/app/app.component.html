@@ -1,24 +1,28 @@
-<header class="barra">
-  <nav>
-    <a routerLink="/inicio">Inicio</a>
-    <a routerLink="/catalogo/gratis">Catálogo gratis</a>
-    <a routerLink="/catalogo/premium">Catálogo premium</a>
+<header class="bg-body-tertiary border-bottom">
+  <nav class="container d-flex flex-wrap align-items-center justify-content-between py-2">
 
-    <span class="separador"></span>
+    <div class="d-flex gap-3">
+      <a routerLink="/inicio" class="nav-link px-0">Inicio</a>
+      <a routerLink="/catalogo/gratis" class="nav-link px-0">Catálogo gratis</a>
+      <a routerLink="/catalogo/premium" class="nav-link px-0">Catálogo premium</a>
+    </div>
 
     <ng-container *ngIf="autenticado; else bloqueInvitado">
-      <span class="estado">Sesión iniciada</span>
-      <span class="estado" *ngIf="premium">· Premium</span>
-      <span class="estado" *ngIf="adulto">· Adulto</span>
-      <button type="button" class="btn" (click)="cerrarSesion()">Cerrar sesión</button>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge text-bg-success">Sesión</span>
+        <span class="badge text-bg-warning" *ngIf="premium">Premium</span>
+        <span class="badge text-bg-danger" *ngIf="adulto">18+</span>
+        <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cerrarSesion()">Cerrar sesión</button>
+      </div>
     </ng-container>
 
     <ng-template #bloqueInvitado>
-      <a routerLink="/iniciar-sesion" class="btn">Iniciar sesión</a>
+      <a routerLink="/iniciar-sesion" class="btn btn-light btn-sm text-dark">Iniciar sesión</a>
     </ng-template>
+
   </nav>
 </header>
 
-<main class="contenido">
+<main class="container py-3">
   <router-outlet></router-outlet>
 </main>

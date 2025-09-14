@@ -2,13 +2,33 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ServicioPeliculas } from '../../nucleo/servicio-peliculas.service';
+import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 
+// Animaciones (mismos triggers usados en catálogo gratis)
 @Component({
   selector: 'app-catalogo-premium',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './catalogo-premium.component.html',
   styleUrls: ['./catalogo-premium.component.css'],
+  animations: [
+    // aparece la lista en bloque
+    trigger('animLista', [
+      transition(':enter', [
+        query('li', [
+          style({ opacity: 0, transform: 'translateY(6px)' }),
+          stagger(80, animate('220ms ease-out', style({ opacity: 1, transform: 'none' })))
+        ], { optional: true })
+      ])
+    ]),
+    // cada tarjeta entra con un pequeño scale
+    trigger('animItem', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.98)' }),
+        animate('180ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+      ])
+    ])
+  ]
 })
 export class CatalogoPremiumComponent {
   private peliculasSrv = inject(ServicioPeliculas);
