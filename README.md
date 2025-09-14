@@ -1,8 +1,7 @@
 # CineParaTodos
 
 Integración de Bootstrap 5 y uso de animaciones
-Enlace al repositorio:
-https://github.com/juan4524/Integraci-n-de-Bootstrap-5-y-uso-de-animaciones
+
 En este proyecto integré Bootstrap 5 para el diseño responsivo.
 Lo instalé con npm y lo registré en angular.json para que sus estilos y scripts estén disponibles en toda la app.
 Ejecuté el comando en la terminal desde la carpeta del proyecto (donde están angular.json y package.json):
