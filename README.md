@@ -25,7 +25,9 @@ Configuración de animaciones
 Instalación (terminal)
 Instalé el paquete de animaciones para poder usarlo desde main.ts y habilitarlo como provider en toda la aplicación.
 Comando para la terminal:
+
 npm i @angular/animations@19.2.14
+
 Nota: la versión mayor debe coincidir con la versión de Angular
 Habilitación global en main.ts 
 Habilito las animaciones en toda la app importando provideAnimations y registrándolo en los providers. Con esto puedo declarar triggers de Angular solo en los componentes que los necesiten (por ejemplo, entrada de tarjetas en los catálogos o una transición entre páginas en el componente raíz).
@@ -65,7 +67,11 @@ Cambios mínimos realizados:
 Código modificado para añadir clases Bootstrap (app.component.html):
 
 
-<header class="bg-body-tertiary border-bottom">
+
+
+
+
+ <header class="bg-body-tertiary border-bottom">
   <nav class="container d-flex flex-wrap align-items-center justify-content-between py-2">
 
     <div class="d-flex gap-3">
@@ -106,7 +112,10 @@ Componente catálogo-gratis
 Grilla responsiva y animaciones para el archivo catalogo-gratis.component.html.
 En este archivo agregamos una grilla, imágenes e implementamos responsividad para los diferentes tamaños de pantalla utilizando los componentes utilitarios de Bootstrap.
 Primero, en el componente del módulo se agregó la importación para usar animaciones: triggers, style, animate, query, stagger.
+
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
+
+
 Y se agregó en el decorador del componente la propiedad animaciones que contiene los triggers definidos con @angular/animations:
 
 
@@ -142,12 +151,20 @@ export class CatalogoGratisComponent {
   private peliculasSrv = inject(ServicioPeliculas);
   peliculas$ = this.peliculasSrv.listarGratis();
 }
+
+
+
+
 Otras modificaciones aparte
 Se agregaron los enlaces para las imágenes en el modelo/datos de la API, apuntando a la carpeta assets/posters.
 Ejemplo:
+
 imagenUrl: 'assets/posters/sonic.jpg'
+
 Se declaró la carpeta assets en angular.json para acceso global:
 angular.json:
+
+
 "tsConfig": "tsconfig.app.json",
             "assets": [
                "src/favicon.ico",
