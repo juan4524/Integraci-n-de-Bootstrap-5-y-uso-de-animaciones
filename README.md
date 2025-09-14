@@ -8,8 +8,11 @@ Lo instalé con npm y lo registré en angular.json para que sus estilos y script
 Ejecuté el comando en la terminal desde la carpeta del proyecto (donde están angular.json y package.json):
 npm install bootstrap
 Después lo registré en angular.json para que aplique en toda la app:
- "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+
+
+
+          "styles": [
+            "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/styles.css"
             ],
             "scripts": [
